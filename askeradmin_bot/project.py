@@ -1,16 +1,15 @@
-from flask import Flask, request # Импортируем модули
+from flask import Flask, request 
 import askeradmin_bot.config as config
 import json
 import requests
 import telegram
 from telegram.update import Update
 import logging
-import functools
 import uuid
 from askeradmin_bot.update_processor import Update_processor 
 
 
-app = Flask(__name__) # Создаем приложение
+app = Flask(__name__) 
 
 
 bot = telegram.Bot(token=config.token)
@@ -22,7 +21,7 @@ logging.basicConfig(filename='log.log', level=logging.DEBUG,
                     format='[%(asctime)s] %(levelname)s in %(module)s:  %(message)s')
 
 
-@app.route("/") # Говорим Flask, что за этот адрес отвечает эта функция
+@app.route("/") 
 def hello_world():
     return "It's working"
 

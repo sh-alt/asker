@@ -1,6 +1,6 @@
 import logging
 from telegram import ChatPermissions
-from telegram import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 
 class Update_processor:
