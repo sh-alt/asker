@@ -1,4 +1,4 @@
-from askeradmin_bot.project import app # Импортируем наше приложение
+from project import app 
 
 if __name__ == "main":
-    app.run() # запускаем его
+    app.run() 

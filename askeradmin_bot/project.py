@@ -1,12 +1,10 @@
 from flask import Flask, request 
-import askeradmin_bot.config as config
-import json
-import requests
+import config 
 import telegram
 from telegram.update import Update
 import logging
 import uuid
-from askeradmin_bot.update_processor import Update_processor 
+from update_processor import Update_processor 
 
 
 app = Flask(__name__) 
@@ -19,28 +17,6 @@ bot = telegram.Bot(token=config.token)
 
 logging.basicConfig(filename='log.log', level=logging.DEBUG,
                     format='[%(asctime)s] %(levelname)s in %(module)s:  %(message)s')
-
-
-
-def get_url(method):
-    return "https://api.telegram.org/bot{}/{}".format(config.token, method)
-
-
-@app.route("/setwebhook")
-def set_webhook():
-    body = {'url': f'https://{config.ip}'}
-    files = {'certificate': (f'{config.sert_pem}', open(f'/etc/ssl/telegram/{config.sert_pem}', 'r'), 'multipart/form-data')}
-    r = requests.post(get_url('setwebhook'), body, files=files)
-    r = requests.get(get_url("getWebHookInfo"))
-    response = str(r.json())
-    return response
-
-
-@app.route("/getwebhook")
-def get_webhook():
-    r = requests.get(get_url("getWebhookInfo"))
-    response = str(r.json())
-    return response
 
 
 @app.route("/", methods=['POST'])

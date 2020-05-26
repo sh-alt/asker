@@ -1,5 +1,5 @@
-from askeradmin_bot.project import bot
-import askeradmin_bot.config as config
+from project import bot
+import config as config
 
 
 url = f'https://{config.ip}'
@@ -13,7 +13,10 @@ def get_webhook_info():
     webhook_info = bot.get_webhook_info()
     return webhook_info
 
+def delete_webhook():
+    bot.delete_webhook()
+
 if __name__ == "__main__":
     wi = get_webhook_info()
     if not wi.url:
-        bot.set_webhook()
+        set_webhook()
