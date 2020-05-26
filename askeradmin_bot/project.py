@@ -21,10 +21,6 @@ logging.basicConfig(filename='log.log', level=logging.DEBUG,
                     format='[%(asctime)s] %(levelname)s in %(module)s:  %(message)s')
 
 
-@app.route("/") 
-def hello_world():
-    return "It's working"
-
 
 def get_url(method):
     return "https://api.telegram.org/bot{}/{}".format(config.token, method)
