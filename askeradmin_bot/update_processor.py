@@ -37,11 +37,19 @@ class Update_processor:
 
 
     def private_command_processor(self):
+        text = 'Привет! \n\n\nЭтот микро-бот создан для того, чтобы отсечь самые глупые спам-боты приходящие в чат, которые \
+не в состоянии нажать на клавишу "Войти". Несмотря на то, что бот простейший - развитие продолжается.\
+Скоро будут новые функции.\n\n\n\
+Для того, чтобы установить бота:\n\
+1. Добавьте бота в чат, где Вы можете назначать адинистраторов;\n\
+2. Назначьте бота администратором.\n\
+Если у Вас возникли какие-либо вопросы или проблемы\
+в работе с ботом - напишите об этом в чате @askerchat'
         if self.update.message.text == '/start':
             logging.debug(f'Отправляю сообщение в ЛС пользователю с id {self.update.message.from_user.id}',
                             extra=self.extra)
             self.bot.sendMessage(chat_id=self.update.message.from_user.id,
-                            text='Привет!')
+                            text=text)
 
 
     def chat_message_processor(self):
@@ -54,7 +62,8 @@ class Update_processor:
         chat_id = self.update.message.chat.id
         user_id = self.update.message.from_user.id
         message_id = self.update.message.message_id
-        text = 'Для того, чтобы войти нажми клавишу "Войти"'
+        first_name = self.update.message.from_user.first_name
+        text = f'Привет, {first_name}! Для того, чтобы войти нажми клавишу "Войти"'
         reply_keyboard = [[InlineKeyboardButton('Войти', callback_data=f'{user_id}')]]
         reply_markup = InlineKeyboardMarkup(reply_keyboard)
         permissions = ChatPermissions(
@@ -77,9 +86,9 @@ class Update_processor:
         user_id = self.update.callback_query.from_user.id
         callback_user_id = int(self.update.callback_query.data)
         message_id = self.update.callback_query.message.message_id
-        text = 'Пользователь прошел проверку! Поприветствуем!'
-        callback_query_id = self.update.callback_query.id
         first_name = self.update.callback_query.message.reply_to_message.from_user.first_name
+        text = f'Проверка {first_name} произведена! Поприветствуем!'
+        callback_query_id = self.update.callback_query.id
         permissions = ChatPermissions(
             can_send_messages=True, 
             can_send_media_messages=True, 
