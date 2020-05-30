@@ -1,7 +1,7 @@
 import logging
 from telegram import ChatPermissions
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-
+from telegram.error import BadRequest
 
 class Update_processor:
 
@@ -17,7 +17,13 @@ class Update_processor:
         if self.update.message:
             logging.debug('Тип обновления message', extra=self.extra)
             logging.debug('Запускаю message_processor', extra=self.extra)
-            self.message_processor()
+            try:
+                self.message_processor()
+            except BadRequest as b:
+                if str(b) == "Can't remove chat owner":
+                    logging.info('Пришел владелец чата')
+                else:
+                    logging.error(f'Что-то пошло не так: {b}')
         elif self.update.callback_query:
             logging.debug('Тип обновления callback_query', extra=self.extra)
             self.callback_processor()           
@@ -25,7 +31,7 @@ class Update_processor:
 
     def message_processor(self):
         if self.update.message.chat.type == 'private':
-            logging.debug('Проверяю количество entities', extra=self.extra)
+            logging.debug('Тип сообщения private')
             if len(self.update.message.entities) > 0:
                 logging.debug('Проверяю наличие команд в сообщении', extra=self.extra)
                 if self.update.message.entities[0].type == 'bot_command':
@@ -33,7 +39,10 @@ class Update_processor:
                                     extra=self.extra)
                     self.private_command_processor()
         elif self.update.message.chat.type != 'private':
+            logging.debug('Тип сообщения не private. Запускаю chat_message_processor')
             self.chat_message_processor()
+            
+            
 
 
     def private_command_processor(self):
@@ -53,19 +62,16 @@ class Update_processor:
 
 
     def chat_message_processor(self):
+        message_text = self.update.message.text
+        logging.debug(f'Текст сообщения: {message_text}')
         if self.update.message.new_chat_members:
             self.new_chat_members_processor()
-        else:
-            pass
+        
     
     def new_chat_members_processor(self):
         chat_id = self.update.message.chat.id
-        user_id = self.update.message.from_user.id
+        #user_id = self.update.message.from_user.id
         message_id = self.update.message.message_id
-        first_name = self.update.message.from_user.first_name
-        text = f'Привет, {first_name}! Для того, чтобы войти нажми клавишу "Войти"'
-        reply_keyboard = [[InlineKeyboardButton('Войти', callback_data=f'{user_id}')]]
-        reply_markup = InlineKeyboardMarkup(reply_keyboard)
         permissions = ChatPermissions(
             can_send_messages=False, 
             can_send_media_messages=False, 
@@ -77,6 +83,11 @@ class Update_processor:
             can_pin_messages=False
         )
         for member in self.update.message.new_chat_members:
+            user_id = member.id
+            first_name = member.first_name
+            text = f'Привет, {first_name}! Для того, чтобы войти нажми клавишу "Войти"'
+            reply_keyboard = [[InlineKeyboardButton('Войти', callback_data=f'{user_id}')]]
+            reply_markup = InlineKeyboardMarkup(reply_keyboard)
             self.bot.restrict_chat_member(chat_id=chat_id, user_id=user_id, permissions=permissions)
             self.bot.send_message(chat_id=chat_id, text=text, reply_to_message_id=message_id, reply_markup=reply_markup)
 
@@ -96,7 +107,7 @@ class Update_processor:
             can_send_other_messages=True, 
             can_add_web_page_previews=True, 
             can_change_info=False, 
-            can_invite_users=False, 
+            can_invite_users=True, 
             can_pin_messages=False
         )
         if callback_user_id == user_id:
