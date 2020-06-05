@@ -5,6 +5,19 @@ from telegram.error import BadRequest
 
 class Update_processor:
 
+    def error_handler(func):
+        def wrapped_func(self):
+            try:
+                func(self)
+            except BadRequest as b:
+                if str(b) == "Can't remove chat owner":
+                    logging.info('Пришел владелец чата')
+                else:
+                    logging.error(f'Что-то пошло не так: {b}')
+            except Exception as e:
+                logging.error(e)
+        return wrapped_func
+
     def __init__(self, update, uid, bot):
         self.update = update
         self.bot = bot
@@ -17,28 +30,14 @@ class Update_processor:
         if self.update.message:
             logging.debug('Тип обновления message', extra=self.extra)
             logging.debug('Запускаю message_processor', extra=self.extra)
-            try:
-                self.message_processor()
-            except BadRequest as b:
-                if str(b) == "Can't remove chat owner":
-                    logging.info('Пришел владелец чата')
-                else:
-                    logging.error(f'Что-то пошло не так: {b}')
-            except Exception as e:
-                logging.error(e)
+            self.message_processor()
         elif self.update.callback_query:
             logging.debug('Тип обновления callback_query', extra=self.extra)
-            try:
-                self.callback_processor()
-            except BadRequest as b:
-                if str(b) == "Can't remove chat owner":
-                    logging.info('Пришел владелец чата')
-                else:
-                    logging.error(f'Что-то пошло не так: {b}')
-            except Exception as e:
-                logging.error(e)           
+            self.callback_processor()
+                  
 
 
+    @error_handler
     def message_processor(self):
         if self.update.message.chat.type == 'private':
             logging.debug('Тип сообщения private')
@@ -100,6 +99,7 @@ class Update_processor:
             self.bot.send_message(chat_id=chat_id, text=text, reply_to_message_id=message_id, reply_markup=reply_markup)
 
 
+    @error_handler
     def callback_processor(self):
         chat_id = self.update.callback_query.message.chat_id
         user_id = self.update.callback_query.from_user.id
