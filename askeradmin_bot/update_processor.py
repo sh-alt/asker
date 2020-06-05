@@ -110,9 +110,11 @@ class Update_processor:
         try:
             first_name = self.update.callback_query.message.reply_to_message.from_user.first_name
             text = f'Проверка {first_name} произведена! Поприветствуем!'
+            flash_text = f'Нажать клавишу может только {first_name}'
         except AttributeError as a:
             logging.error(a)
             text = 'Проверка произведена! Поприветствуем!'
+            flash_text = 'Нажать клавишу может только тот, кому адресовано сообщение'
         callback_query_id = self.update.callback_query.id
         permissions = ChatPermissions(
             can_send_messages=True, 
@@ -129,7 +131,6 @@ class Update_processor:
             self.bot.edit_message_text(chat_id=chat_id, message_id=message_id, text=text)
             self.bot.answer_callback_query(callback_query_id=callback_query_id)
         else:
-            text = f'Нажать клавишу может только {first_name}'
             self.bot.answer_callback_query(callback_query_id=callback_query_id, 
                                             show_alert=True,
-                                            text=text)
+                                            text=flash_text)
