@@ -2,11 +2,12 @@ import logging
 from telegram import ChatPermissions
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.error import BadRequest
+import texts
 
 
 class Update_processor:
 
-    def error_handler(func):
+    def update_error_handler(func):
         def wrapped_func(self):
             try:
                 func(self)
@@ -28,7 +29,6 @@ class Update_processor:
 
 
     def update_processor(self):
-        logging.debug('Проверяю тип обновления', extra=self.extra)
         if self.update.message:
             logging.debug('Тип обновления message', extra=self.extra)
             logging.debug('Запускаю message_processor', extra=self.extra)
@@ -39,7 +39,7 @@ class Update_processor:
                   
 
 
-    @error_handler
+    @update_error_handler
     def message_processor(self):
         if self.update.message.chat.type == 'private':
             logging.debug('Тип сообщения private')
@@ -55,14 +55,7 @@ class Update_processor:
             
             
     def private_command_processor(self):
-        text = 'Привет! \n\n\nЭтот микро-бот создан для того, чтобы отсечь самые глупые спам-боты приходящие в чат, которые \
-не в состоянии нажать на клавишу "Войти". Несмотря на то, что бот простейший - развитие продолжается.\
-Скоро будут новые функции.\n\n\n\
-Для того, чтобы установить бота:\n\
-1. Добавьте бота в чат, где Вы можете назначать адинистраторов;\n\
-2. Назначьте бота администратором.\n\
-Если у Вас возникли какие-либо вопросы или проблемы \
-в работе с ботом - напишите об этом в чате @askerchat'
+        text = texts.private_start_message
         if self.update.message.text == '/start':
             logging.debug(f'Отправляю сообщение в ЛС пользователю с id {self.update.message.from_user.id}',
                             extra=self.extra)
@@ -94,14 +87,14 @@ class Update_processor:
         for member in self.update.message.new_chat_members:
             user_id = member.id
             first_name = member.first_name
-            text = f'Привет, {first_name}! Для того, чтобы войти нажми клавишу "Войти"'
+            text = texts.welcome_message.substitute(first_name=first_name)
             reply_keyboard = [[InlineKeyboardButton('Войти', callback_data=f'{user_id}')]]
             reply_markup = InlineKeyboardMarkup(reply_keyboard)
             self.bot.restrict_chat_member(chat_id=chat_id, user_id=user_id, permissions=permissions)
             self.bot.send_message(chat_id=chat_id, text=text, reply_to_message_id=message_id, reply_markup=reply_markup)
 
 
-    @error_handler
+    @update_error_handler
     def callback_processor(self):
         chat_id = self.update.callback_query.message.chat_id
         user_id = self.update.callback_query.from_user.id
