@@ -28,7 +28,15 @@ class Update_processor:
                 logging.error(e)
         elif self.update.callback_query:
             logging.debug('Тип обновления callback_query', extra=self.extra)
-            self.callback_processor()           
+            try:
+                self.callback_processor()
+            except BadRequest as b:
+                if str(b) == "Can't remove chat owner":
+                    logging.info('Пришел владелец чата')
+                else:
+                    logging.error(f'Что-то пошло не так: {b}')
+            except Exception as e:
+                logging.error(e)           
 
 
     def message_processor(self):
