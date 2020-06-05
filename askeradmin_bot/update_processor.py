@@ -3,6 +3,7 @@ from telegram import ChatPermissions
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.error import BadRequest
 
+
 class Update_processor:
 
     def error_handler(func):
@@ -17,6 +18,7 @@ class Update_processor:
             except Exception as e:
                 logging.error(e)
         return wrapped_func
+
 
     def __init__(self, update, uid, bot):
         self.update = update
@@ -105,8 +107,12 @@ class Update_processor:
         user_id = self.update.callback_query.from_user.id
         callback_user_id = int(self.update.callback_query.data)
         message_id = self.update.callback_query.message.message_id
-        first_name = self.update.callback_query.message.reply_to_message.from_user.first_name
-        text = f'Проверка {first_name} произведена! Поприветствуем!'
+        try:
+            first_name = self.update.callback_query.message.reply_to_message.from_user.first_name
+            text = f'Проверка {first_name} произведена! Поприветствуем!'
+        except AttributeError as a:
+            logging.error(a)
+            text = 'Проверка произведена! Поприветствуем!'
         callback_query_id = self.update.callback_query.id
         permissions = ChatPermissions(
             can_send_messages=True, 
