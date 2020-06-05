@@ -24,6 +24,8 @@ class Update_processor:
                     logging.info('Пришел владелец чата')
                 else:
                     logging.error(f'Что-то пошло не так: {b}')
+            except Exception as e:
+                logging.error(e)
         elif self.update.callback_query:
             logging.debug('Тип обновления callback_query', extra=self.extra)
             self.callback_processor()           
@@ -43,8 +45,6 @@ class Update_processor:
             self.chat_message_processor()
             
             
-
-
     def private_command_processor(self):
         text = 'Привет! \n\n\nЭтот микро-бот создан для того, чтобы отсечь самые глупые спам-боты приходящие в чат, которые \
 не в состоянии нажать на клавишу "Войти". Несмотря на то, что бот простейший - развитие продолжается.\
@@ -52,7 +52,7 @@ class Update_processor:
 Для того, чтобы установить бота:\n\
 1. Добавьте бота в чат, где Вы можете назначать адинистраторов;\n\
 2. Назначьте бота администратором.\n\
-Если у Вас возникли какие-либо вопросы или проблемы\
+Если у Вас возникли какие-либо вопросы или проблемы \
 в работе с ботом - напишите об этом в чате @askerchat'
         if self.update.message.text == '/start':
             logging.debug(f'Отправляю сообщение в ЛС пользователю с id {self.update.message.from_user.id}',
