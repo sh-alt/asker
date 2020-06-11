@@ -3,9 +3,12 @@ from telegram import ChatPermissions
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.error import BadRequest
 import texts
-
+from handlers import (Message_handler, Private_message_handler, 
+Private_command_handler, New_user_handler, Callback_query_handler, Chat_message_handler,
+Left_chat_members_handler)
 
 class Update_processor:
+
 
     def update_error_handler(func):
         def wrapped_func(self):
@@ -28,49 +31,31 @@ class Update_processor:
         self.update_processor()
 
 
-    def update_processor(self):
-        if self.update.message:
-            self.message_processor()
-        elif self.update.callback_query:
-            logging.info('Тип обновления callback_query', extra=self.extra)
-            self.callback_processor()
-                  
-
-
     @update_error_handler
-    def message_processor(self):
-        logging.info('Тип обновления message. Запускаю message_processor', extra=self.extra)
-        if self.update.message.chat.type == 'private':
-            logging.info('Тип сообщения private')
-            if len(self.update.message.entities) > 0:
-                logging.debug('Проверяю наличие команд в сообщении', extra=self.extra)
-                if self.update.message.entities[0].type == 'bot_command':
-                    self.private_command_processor()
-        elif self.update.message.chat.type != 'private':
-            self.chat_message_processor()
-            
-            
-    def private_command_processor(self):
-        logging.info(f'Найдена команда {self.update.message.text}, запускаю private_command_processor', 
-                                    extra=self.extra)
-        text = texts.private_start_message
-        if self.update.message.text == '/start':
-            logging.info(f'Отправляю сообщение в ЛС пользователю с id {self.update.message.from_user.id}',
-                            extra=self.extra)
-            self.bot.sendMessage(chat_id=self.update.message.from_user.id,
-                            text=text)
+    def update_processor(self):
+        Private_command_handler(self.update, self.command_processor)
+        New_user_handler(self.update, self.new_chat_members_processor)
+        Chat_message_handler(self.update, self.chat_message_processor)
+        Callback_query_handler(self.update, self.callback_processor)
+        Left_chat_members_handler(self.update, self.left_chat_member_processor)
 
 
     def chat_message_processor(self):
-        logging.info('Тип сообщения не private. Запускаю chat_message_processor')
-        message_text = ''
-        if self.update.message.text:
-            message_text = self.update.message.text
-        logging.info(f'[CHAT_MESSAGE]: {self.update.message.chat}, \
+        logging.info(f'[CHAT_MESSAGE]: chat: {self.update.message.chat}, \
 from_user: {self.update.message.from_user} \
-text: {message_text}')
-        if self.update.message.new_chat_members:
-            self.new_chat_members_processor()
+text: {self.update.message.text}')
+
+
+    def left_chat_member_processor(self):
+        logging.info(f'[LEFT_MEMBER]: chat: {self.update.message.chat}, \
+left_user: {self.update.message.left_chat_member}')
+
+    def command_processor(self):
+        text = texts.private_start_message
+        if self.update.message.text == '/start':
+            self.bot.sendMessage(chat_id=self.update.message.from_user.id,
+                            text=text)
+
         
     
     def new_chat_members_processor(self):
@@ -93,7 +78,7 @@ text: {message_text}')
             text = texts.welcome_message.substitute(first_name=first_name)
             reply_keyboard = [[InlineKeyboardButton('Войти', callback_data=f'{user_id}')]]
             reply_markup = InlineKeyboardMarkup(reply_keyboard)
-            logging.info(f'[NEW USER] Новый пользователь {self.update.message.from_user} в чате {self.update.message.chat}')
+            logging.info(f'[NEW_USER] Новый пользователь {self.update.message.from_user} в чате {self.update.message.chat}')
             logging.info(f'[RESTRICT] Применяю ограничения для пользователя {self.update.message.from_user} в чате \
 {self.update.message.chat}')
             self.bot.restrict_chat_member(chat_id=chat_id, user_id=user_id, permissions=permissions)
