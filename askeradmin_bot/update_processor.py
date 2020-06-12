@@ -98,7 +98,7 @@ left_user: {self.update.message.left_chat_member}')
         callback_user_id = int(self.update.callback_query.data)
         message_id = self.update.callback_query.message.message_id
         try:
-            first_name = self.update.callback_query.message.reply_to_message.from_user.first_name
+            first_name = self.update.callback_query.message.reply_to_message.new_chat_participant.first_name
             text = f'Проверка {first_name} произведена! Поприветствуем!'
             flash_text = f'Нажать клавишу может только {first_name}'
         except AttributeError as a:
