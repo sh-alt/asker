@@ -7,6 +7,7 @@ from handlers import (Message_handler, Private_message_handler,
 Private_command_handler, New_user_handler, Callback_query_handler, Chat_message_handler,
 Left_chat_members_handler)
 
+
 class Update_processor:
 
 
@@ -17,6 +18,11 @@ class Update_processor:
             except BadRequest as b:
                 if str(b) == "Can't remove chat owner":
                     logging.info('Пришел владелец чата')
+                elif str(b) == 'Not enough rights to restrict/unrestrict chat member':
+                    logging.info(f'У бота недостаточно прав в чате {self.update.message.chat}')
+                    text = '[NOT_ENOUGH_RIGHTS] У бота недостаточно прав в этом чате'
+                    chat_id = self.update.message.chat.id
+                    self.bot.send_message(chat_id=chat_id, text=text)
                 else:
                     logging.error(f'Что-то пошло не так: {b}')
             except Exception as e:
