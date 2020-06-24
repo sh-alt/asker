@@ -63,7 +63,7 @@ left_user: {self.update.message.left_chat_member}')
                             text=text)
 
         
-    
+    @update_error_handler
     def new_chat_members_processor(self):
         chat_id = self.update.message.chat.id
         #user_id = self.update.message.from_user.id
