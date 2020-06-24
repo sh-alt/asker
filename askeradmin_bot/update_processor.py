@@ -93,35 +93,53 @@ left_user: {self.update.message.left_chat_member}')
 
     @update_error_handler
     def callback_processor(self):
+        self.callback_user_id = int(self.update.callback_query.data)
+        self.users_list = {}
+        for member in self.update.callback_query.message.reply_to_message.new_chat_members: 
+            self.users_list[member.id] = member.first_name
+        if self.check_user():
+            self.promote_user()
+        else:
+            self.flash_message()
+            
+
+    def check_user(self):
+        user_initiated = self.update.callback_query.from_user
+        if self.callback_user_id == user_initiated.id:
+            return True
+        else: 
+            return False
+
+    
+    def promote_user(self):
         chat_id = self.update.callback_query.message.chat_id
-        user_initiated_id = self.update.callback_query.from_user.id
-        callback_user_id = int(self.update.callback_query.data)
+        user_initiated = self.update.callback_query.from_user
         message_id = self.update.callback_query.message.message_id
         callback_query_id = self.update.callback_query.id
-        users_list = {}
-        for member in self.update.callback_query.message.reply_to_message.new_chat_members: 
-            users_list[member.id] = member.first_name
-        permissions = ChatPermissions(
-            can_send_messages=True, 
-            can_send_media_messages=True, 
-            can_send_polls=True, 
-            can_send_other_messages=True, 
-            can_add_web_page_previews=True, 
-            can_change_info=False, 
-            can_invite_users=True, 
-            can_pin_messages=False
-        )
-        text = f'Проверка {users_list[callback_user_id]} произведена! Поприветствуем! '
-        flash_text = f'Нажать клавишу может только {users_list[callback_user_id]}'
-        if callback_user_id == user_initiated_id:
-            logging.info(f'[PROMOTE] Снимаю ограничения с пользователя {self.update.callback_query.from_user} \
+        logging.info(f'[PROMOTE] Снимаю ограничения с пользователя {self.update.callback_query.from_user} \
 в чате {self.update.callback_query.message.chat}')
-            self.bot.restrict_chat_member(chat_id=chat_id, user_id=user_initiated_id, permissions=permissions)
-            self.bot.edit_message_text(chat_id=chat_id, message_id=message_id, text=text)
-            self.bot.answer_callback_query(callback_query_id=callback_query_id)
-        else:
-            logging.info(f'Пользователь {self.update.callback_query.from_user} нажал клавишу. \
+        
+        text = f'Проверка {self.users_list[self.callback_user_id]} произведена! Поприветствуем! '
+        permissions = ChatPermissions(
+                    can_send_messages=True, 
+                    can_send_media_messages=True, 
+                    can_send_polls=True, 
+                    can_send_other_messages=True, 
+                    can_add_web_page_previews=True, 
+                    can_change_info=False, 
+                    can_invite_users=True, 
+                    can_pin_messages=False
+                )
+        self.bot.restrict_chat_member(chat_id=chat_id, user_id=user_initiated.id, permissions=permissions)
+        self.bot.edit_message_text(chat_id=chat_id, message_id=message_id, text=text)
+        self.bot.answer_callback_query(callback_query_id=callback_query_id)
+
+
+    def flash_message(self):
+        callback_query_id = self.update.callback_query.id
+        flash_text = f'Нажать клавишу может только {self.users_list[self.callback_user_id]}'
+        logging.info(f'Пользователь {self.update.callback_query.from_user} нажал клавишу. \
 Callback: {self.update}')
-            self.bot.answer_callback_query(callback_query_id=callback_query_id, 
+        self.bot.answer_callback_query(callback_query_id=callback_query_id, 
                                             show_alert=True,
                                             text=flash_text)
