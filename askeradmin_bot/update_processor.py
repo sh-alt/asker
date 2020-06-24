@@ -20,13 +20,13 @@ class Update_processor:
                     logging.info('Пришел владелец чата')
                 elif str(b) == 'Not enough rights to restrict/unrestrict chat member':
                     logging.info(f'[NOT_ENOUGH_RIGHTS] У бота недостаточно прав в чате {self.update.message.chat}')
-                    text = 'У бота недостаточно прав в этом чате'
+                    text = 'У бота недостаточно прав в этом чате. Подробнее в лс бота'
                     chat_id = self.update.message.chat.id
                     self.bot.send_message(chat_id=chat_id, text=text)
                 else:
-                    logging.error(f'Что-то пошло не так: {b}')
+                    logging.error(f'[ERROR] Что-то пошло не так: {b} update: {self.update}')
             except Exception as e:
-                logging.error(e)
+                logging.error(f'[ERROR] {e} update: {self.update}')
         return wrapped_func
 
 
