@@ -84,8 +84,8 @@ left_user: {self.update.message.left_chat_member}')
             text = texts.welcome_message.substitute(first_name=first_name)
             reply_keyboard = [[InlineKeyboardButton('Войти', callback_data=f'{user_id}')]]
             reply_markup = InlineKeyboardMarkup(reply_keyboard)
-            logging.info(f'[NEW_USER] Новый пользователь {self.update.message.from_user} в чате {self.update.message.chat}')
-            logging.info(f'[RESTRICT] Применяю ограничения для пользователя {self.update.message.from_user} в чате \
+            logging.info(f'[NEW_USER] Новый пользователь {member} в чате {self.update.message.chat}')
+            logging.info(f'[RESTRICT] Применяю ограничения для пользователя {member} в чате \
 {self.update.message.chat}')
             self.bot.restrict_chat_member(chat_id=chat_id, user_id=user_id, permissions=permissions)
             self.bot.send_message(chat_id=chat_id, text=text, reply_to_message_id=message_id, reply_markup=reply_markup)
@@ -94,18 +94,13 @@ left_user: {self.update.message.left_chat_member}')
     @update_error_handler
     def callback_processor(self):
         chat_id = self.update.callback_query.message.chat_id
-        user_id = self.update.callback_query.from_user.id
+        user_initiated_id = self.update.callback_query.from_user.id
         callback_user_id = int(self.update.callback_query.data)
         message_id = self.update.callback_query.message.message_id
-        try:
-            first_name = self.update.callback_query.message.reply_to_message.new_chat_participant.first_name
-            text = f'Проверка {first_name} произведена! Поприветствуем!'
-            flash_text = f'Нажать клавишу может только {first_name}'
-        except AttributeError as a:
-            logging.error(a)
-            text = 'Проверка произведена! Поприветствуем!'
-            flash_text = 'Нажать клавишу может только тот, кому адресовано сообщение'
         callback_query_id = self.update.callback_query.id
+        users_list = {}
+        for member in self.update.callback_query.message.reply_to_message.new_chat_members: 
+            users_list[member.id] = member.first_name
         permissions = ChatPermissions(
             can_send_messages=True, 
             can_send_media_messages=True, 
@@ -116,10 +111,12 @@ left_user: {self.update.message.left_chat_member}')
             can_invite_users=True, 
             can_pin_messages=False
         )
-        if callback_user_id == user_id:
+        text = f'Проверка {users_list[callback_user_id]} произведена! Поприветствуем! '
+        flash_text = f'Нажать клавишу может только {users_list[callback_user_id]}'
+        if callback_user_id == user_initiated_id:
             logging.info(f'[PROMOTE] Снимаю ограничения с пользователя {self.update.callback_query.from_user} \
 в чате {self.update.callback_query.message.chat}')
-            self.bot.restrict_chat_member(chat_id=chat_id, user_id=user_id, permissions=permissions)
+            self.bot.restrict_chat_member(chat_id=chat_id, user_id=user_initiated_id, permissions=permissions)
             self.bot.edit_message_text(chat_id=chat_id, message_id=message_id, text=text)
             self.bot.answer_callback_query(callback_query_id=callback_query_id)
         else:
