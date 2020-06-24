@@ -12,7 +12,7 @@ app = Flask(__name__)
 
 bot = telegram.Bot(token=config.token)
 
-logging.basicConfig(filename='/var/log/projects/askeradmin_bot/production.log', level=logging.INFO,
+logging.basicConfig(filename='/var/log/projects/askeradmin_bot/production.log', level=logging.DEBUG,
                     format='[%(asctime)s] %(levelname)s in %(module)s:  %(message)s')
 
 
