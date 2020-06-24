@@ -19,8 +19,8 @@ class Update_processor:
                 if str(b) == "Can't remove chat owner":
                     logging.info('Пришел владелец чата')
                 elif str(b) == 'Not enough rights to restrict/unrestrict chat member':
-                    logging.info(f'У бота недостаточно прав в чате {self.update.message.chat}')
-                    text = '[NOT_ENOUGH_RIGHTS] У бота недостаточно прав в этом чате'
+                    logging.info(f'[NOT_ENOUGH_RIGHTS] У бота недостаточно прав в чате {self.update.message.chat}')
+                    text = 'У бота недостаточно прав в этом чате'
                     chat_id = self.update.message.chat.id
                     self.bot.send_message(chat_id=chat_id, text=text)
                 else:
@@ -110,7 +110,7 @@ left_user: {self.update.message.left_chat_member}')
         else: 
             return False
 
-    
+    @update_error_handler
     def promote_user(self):
         chat_id = self.update.callback_query.message.chat_id
         user_initiated = self.update.callback_query.from_user
@@ -134,7 +134,7 @@ left_user: {self.update.message.left_chat_member}')
         self.bot.edit_message_text(chat_id=chat_id, message_id=message_id, text=text)
         self.bot.answer_callback_query(callback_query_id=callback_query_id)
 
-
+    @update_error_handler
     def flash_message(self):
         callback_query_id = self.update.callback_query.id
         flash_text = f'Нажать клавишу может только {self.users_list[self.callback_user_id]}'
