@@ -6,9 +6,7 @@ import logging
 import uuid
 from update_processor import Update_processor 
 
-
 app = Flask(__name__) 
-
 
 bot = telegram.Bot(token=config.token)
 
@@ -26,4 +24,3 @@ def incoming_message():
     logging.debug(f'Запускаю update_processor', extra={'uid': uid})
     Update_processor(update_obj, uid, bot)
     return 'OK'
-
